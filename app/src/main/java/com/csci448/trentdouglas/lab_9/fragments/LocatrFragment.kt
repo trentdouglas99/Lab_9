@@ -35,9 +35,12 @@ import kotlin.text.StringBuilder
 
 class LocatrFragment: SupportMapFragment() {
 
+
+
     companion object{
         public const val REQUEST_LOC_ON = 0
         private var locationUpdateState = false
+        public lateinit var INSTANCE:LocatrFragment
     }
     private lateinit var locationRequest: LocationRequest
 //    private var _binding:FragmentLocatrBinding? = null
@@ -78,6 +81,7 @@ class LocatrFragment: SupportMapFragment() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        INSTANCE = this
         setHasOptionsMenu(true)
         locationRequest = LocationRequest.create()
         locationRequest.interval=0
@@ -204,6 +208,7 @@ class LocatrFragment: SupportMapFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.d(LOG_TAG, "onCreateView() called")
         val mapView = super.onCreateView(inflater, container, savedInstanceState)
+
         return mapView
     }
 
