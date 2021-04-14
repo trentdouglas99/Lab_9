@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
             //Toast.makeText(this, "Weee", Toast.LENGTH_SHORT).show()
 
             LocatrFragment.INSTANCE.checkPermissionAndGetLocation()
+
         }
 
         val navHostFragment = supportFragmentManager.findFragmentById((binding).navHostFragment.id) as NavHostFragment

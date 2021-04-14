@@ -17,7 +17,13 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.csci448.trentdouglas.lab_9.R
+import com.csci448.trentdouglas.lab_9.data.MarkerData
+import com.csci448.trentdouglas.lab_9.util.NetworkConnectionUtil.isNetworkAvailableAndConnected
+import com.csci448.trentdouglas.lab_9.util.WeatherWorker
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -44,23 +50,56 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
         public lateinit var INSTANCE:LocatrFragment
     }
     private lateinit var mapView : View
-    private var longitude:Double = 0.0
-    private var lattitude:Double = 0.0
+
+    private var markerData:MarkerData = MarkerData("0", 0.0, 0.0, 0, "not here")
+    public fun getLong():Double{
+        return markerData.longitude
+    }
+    public fun getLat():Double{
+        return markerData.lattitude
+    }
+
+    public fun setWeather(temp:Double, conditions:String){
+        markerData.temperature = ((temp - 273.15) * 9/5 + 32).toInt()
+
+        markerData.conditions = conditions
+    }
 
     private lateinit var mySnackbar: Snackbar
     private lateinit var locationRequest: LocationRequest
-    private lateinit var time: String
-//    private var _binding:FragmentLocatrBinding? = null
-//    private val binding get() = _binding!!
-    //private lateinit var locationPermissionCallback: ActivityResultCallback<Boolean>
+
     private lateinit var locationPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
     private lateinit var googleMap: GoogleMap
     private lateinit var lastLocation: Location
+    private lateinit var workManager: WorkManager
 
     private val LOG_TAG = "locatrFragment: "
 
+    fun getWeatherData(){
+        val workRequest = OneTimeWorkRequest.Builder(WeatherWorker::class.java).build()
+        workManager.getWorkInfoByIdLiveData(workRequest.id).observe(
+                viewLifecycleOwner,
+                { workInfo ->
+                    when( workInfo.state ) {
+                        WorkInfo.State.SUCCEEDED -> {
+                            val apiData = WeatherWorker.getApiData(workInfo.outputData)
+                            if(apiData != null) {
+                                Log.d(LOG_TAG, apiData.toString())
+                                Toast.makeText(requireContext(), "got data!", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        WorkInfo.State.CANCELLED, WorkInfo.State.FAILED -> {
+                            Toast.makeText(requireContext(), "Network request could not be fulfilled :(", Toast.LENGTH_SHORT).show()
+
+                        } }
+                } )
+
+
+
+        workManager.enqueue(workRequest)
+    }
 
     private fun updateUI() {
         // make sure we have a map and a location
@@ -79,7 +118,7 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
         marker = googleMap.addMarker(
                 myMarker
         )
-        marker.tag = time
+        marker.tag = markerData
         marker.showInfoWindow()
 
         //googleMap.clear()
@@ -95,10 +134,17 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
         googleMap.animateCamera(cameraUpdate)
     }
 
+    override fun onResume() {
+        super.onResume()
+        if(!isNetworkAvailableAndConnected(requireActivity())){
+            Toast.makeText(requireContext(), R.string.internet_reason, Toast.LENGTH_SHORT).show()
 
+        }
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        workManager = WorkManager.getInstance(requireContext())
         INSTANCE = this
         setHasOptionsMenu(true)
         locationRequest = LocationRequest.create()
@@ -112,11 +158,12 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
                 lastLocation = locationResult.lastLocation
                 super.onLocationResult(locationResult)
                 Log.d(LOG_TAG, "Got a location: ${locationResult.lastLocation}")
-                lattitude = locationResult.lastLocation.latitude
-                longitude = locationResult.lastLocation.longitude
+                markerData.lattitude = locationResult.lastLocation.latitude
+                markerData.longitude = locationResult.lastLocation.longitude
                 val dateFormat: DateFormat = SimpleDateFormat("HH:mm:ss MM/dd/yyyy")
                 val cal: Calendar = Calendar.getInstance()
-                time = dateFormat.format(cal.getTime())
+                markerData.time = dateFormat.format(cal.getTime())
+                getWeatherData()
 
 
 
@@ -126,11 +173,15 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
             }
         }
 
+
+
         getMapAsync { map ->
             googleMap = map
             googleMap.setOnMarkerClickListener(this)
             requireActivity().invalidateOptionsMenu()
         }
+
+
 
 
 
@@ -228,6 +279,7 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
             // permission has been granted, do what we want
             Log.d(LOG_TAG, "thanks!")
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+
         }
     }
 
@@ -275,8 +327,7 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
 
         var view: View? = getActivity()?.findViewById(R.id.fragment_container)
         view = view!!
-        var time_of_mark = p0.tag
-        mySnackbar = Snackbar.make(view, "Time: ${time_of_mark}", LENGTH_LONG)
+        mySnackbar = Snackbar.make(view, "Time: ${(p0.tag as MarkerData).time} \nWeather: ${(p0.tag as MarkerData).conditions} (${(p0.tag as MarkerData).temperature}\u2109)", LENGTH_LONG)
         mySnackbar.show()
         return true
     }
