@@ -107,8 +107,7 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
             return }
         // create a point for the corresponding lat/long
         val myLocationPoint = LatLng(lastLocation.latitude, lastLocation.longitude)
-        // Step 3 will go here
-        // create the marker
+ 
         val myMarker = MarkerOptions()
                 .position(myLocationPoint)
                 .title("Longitude: ${lastLocation.longitude}, Lattidtude: ${lastLocation.latitude}")
