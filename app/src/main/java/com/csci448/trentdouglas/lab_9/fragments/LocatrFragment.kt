@@ -17,11 +17,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
-import com.csci448.trentdouglas.lab_9.MainActivity
 import com.csci448.trentdouglas.lab_9.R
-import com.csci448.trentdouglas.lab_9.databinding.FragmentLocatrBinding
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -29,11 +25,16 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
+import com.google.android.material.snackbar.Snackbar
 import java.io.IOException
-import kotlin.text.StringBuilder
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
-class LocatrFragment: SupportMapFragment() {
+class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
 
 
 
@@ -42,7 +43,13 @@ class LocatrFragment: SupportMapFragment() {
         private var locationUpdateState = false
         public lateinit var INSTANCE:LocatrFragment
     }
+    private lateinit var mapView : View
+    private var longitude:Double = 0.0
+    private var lattitude:Double = 0.0
+
+    private lateinit var mySnackbar: Snackbar
     private lateinit var locationRequest: LocationRequest
+    private lateinit var time: String
 //    private var _binding:FragmentLocatrBinding? = null
 //    private val binding get() = _binding!!
     //private lateinit var locationPermissionCallback: ActivityResultCallback<Boolean>
@@ -63,11 +70,20 @@ class LocatrFragment: SupportMapFragment() {
         val myLocationPoint = LatLng(lastLocation.latitude, lastLocation.longitude)
         // Step 3 will go here
         // create the marker
-        val myMarker = MarkerOptions().position(myLocationPoint).title( getAddress(lastLocation) )
-        // clear any prior markers on the map
-        googleMap.clear()
-        // add the new markers
-        googleMap.addMarker(myMarker)
+        val myMarker = MarkerOptions()
+                .position(myLocationPoint)
+                .title("Longitude: ${lastLocation.longitude}, Lattidtude: ${lastLocation.latitude}")
+
+
+        lateinit var marker: Marker
+        marker = googleMap.addMarker(
+                myMarker
+        )
+        marker.tag = time
+        marker.showInfoWindow()
+
+        //googleMap.clear()
+
         // include all points that should be within the bounds of the zoom
         // convex hull
         val bounds = LatLngBounds.Builder().include(myLocationPoint).build()
@@ -78,6 +94,8 @@ class LocatrFragment: SupportMapFragment() {
         // move our camera!
         googleMap.animateCamera(cameraUpdate)
     }
+
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,7 +112,15 @@ class LocatrFragment: SupportMapFragment() {
                 lastLocation = locationResult.lastLocation
                 super.onLocationResult(locationResult)
                 Log.d(LOG_TAG, "Got a location: ${locationResult.lastLocation}")
- //               binding.locationTextView.text = "(${locationResult.lastLocation.latitude},${locationResult.lastLocation.longitude})"
+                lattitude = locationResult.lastLocation.latitude
+                longitude = locationResult.lastLocation.longitude
+                val dateFormat: DateFormat = SimpleDateFormat("HH:mm:ss MM/dd/yyyy")
+                val cal: Calendar = Calendar.getInstance()
+                time = dateFormat.format(cal.getTime())
+
+
+
+                //               binding.locationTextView.text = "(${locationResult.lastLocation.latitude},${locationResult.lastLocation.longitude})"
  //               binding.addressTextView.text = getAddress(locationResult.lastLocation)
                 updateUI()
             }
@@ -102,6 +128,7 @@ class LocatrFragment: SupportMapFragment() {
 
         getMapAsync { map ->
             googleMap = map
+            googleMap.setOnMarkerClickListener(this)
             requireActivity().invalidateOptionsMenu()
         }
 
@@ -138,9 +165,9 @@ class LocatrFragment: SupportMapFragment() {
                 val address = addresses[0]
                 for(i in 0..address.maxAddressLineIndex) {
                     if(i > 0) {
-                        addressTextBuilder.append( "\n" )
+                        addressTextBuilder.append("\n")
                     }
-                    addressTextBuilder.append( address.getAddressLine(i) )
+                    addressTextBuilder.append(address.getAddressLine(i))
                 }
             }
         } catch (e: IOException) {
@@ -160,8 +187,7 @@ class LocatrFragment: SupportMapFragment() {
                 locationUpdateState = true
                 requireActivity().invalidateOptionsMenu()
             }
-            addOnFailureListener {
-                    exc ->
+            addOnFailureListener { exc ->
                 locationUpdateState = false
                 requireActivity().invalidateOptionsMenu()
                 if(exc is ResolvableApiException) {
@@ -186,7 +212,7 @@ class LocatrFragment: SupportMapFragment() {
     }
 
     fun checkPermissionAndGetLocation(){
-        if (ContextCompat.checkSelfPermission( requireContext(), ACCESS_FINE_LOCATION )!= PERMISSION_GRANTED){
+        if (ContextCompat.checkSelfPermission(requireContext(), ACCESS_FINE_LOCATION)!= PERMISSION_GRANTED){
 
             if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), ACCESS_FINE_LOCATION)) {
                 // user already said no, don't ask again
@@ -207,7 +233,7 @@ class LocatrFragment: SupportMapFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.d(LOG_TAG, "onCreateView() called")
-        val mapView = super.onCreateView(inflater, container, savedInstanceState)
+        mapView = super.onCreateView(inflater, container, savedInstanceState)!!
 
         return mapView
     }
@@ -240,8 +266,19 @@ class LocatrFragment: SupportMapFragment() {
 
     override fun onStop() {
         Log.d(LOG_TAG, "onStop called")
-        fusedLocationProviderClient.removeLocationUpdates( locationCallback )
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         super.onStop()
+    }
+
+    override fun onMarkerClick(p0: Marker?): Boolean {
+        p0!!.showInfoWindow()
+
+        var view: View? = getActivity()?.findViewById(R.id.fragment_container)
+        view = view!!
+        var time_of_mark = p0.tag
+        mySnackbar = Snackbar.make(view, "Time: ${time_of_mark}", LENGTH_LONG)
+        mySnackbar.show()
+        return true
     }
 
 
