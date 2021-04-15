@@ -17,6 +17,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -55,15 +56,18 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
     public fun getLong():Double{
         return markerData.longitude
     }
+    public fun getTime():String{
+        return markerData.time
+    }
     public fun getLat():Double{
         return markerData.lattitude
     }
 
-    public fun setWeather(temp:Double, conditions:String){
-        markerData.temperature = ((temp - 273.15) * 9/5 + 32).toInt()
-
-        markerData.conditions = conditions
-    }
+//    public fun setWeather(temp:Double, conditions:String){
+//        markerData.temperature = ((temp - 273.15) * 9/5 + 32).toInt()
+//
+//        markerData.conditions = conditions
+//    }
 
     private lateinit var mySnackbar: Snackbar
     private lateinit var locationRequest: LocationRequest
@@ -74,6 +78,7 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
     private lateinit var googleMap: GoogleMap
     private lateinit var lastLocation: Location
     private lateinit var workManager: WorkManager
+    private lateinit var locatrFragmentViewModel: LocatrFragmentViewModel
 
     private val LOG_TAG = "locatrFragment: "
 
@@ -120,6 +125,7 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
         marker.tag = markerData
         marker.showInfoWindow()
 
+
         //googleMap.clear()
 
         // include all points that should be within the bounds of the zoom
@@ -141,8 +147,15 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
         }
     }
 
+    public fun getViewModel(): LocatrFragmentViewModel {
+        return locatrFragmentViewModel
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        val factory = MarkerListViewModelFactory(requireContext())
+        locatrFragmentViewModel = ViewModelProvider(this@LocatrFragment, factory).get(LocatrFragmentViewModel::class.java)
+
         workManager = WorkManager.getInstance(requireContext())
         INSTANCE = this
         setHasOptionsMenu(true)
@@ -163,6 +176,9 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
                 val cal: Calendar = Calendar.getInstance()
                 markerData.time = dateFormat.format(cal.getTime())
                 getWeatherData()
+
+
+
 
 
 
@@ -324,7 +340,7 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
     override fun onMarkerClick(p0: Marker?): Boolean {
         p0!!.showInfoWindow()
 
-        var view: View? = getActivity()?.findViewById(R.id.fragment_container)
+        var view: View? = getActivity()?.findViewById(R.id.drawer_layout)
         view = view!!
         mySnackbar = Snackbar.make(view, "Time: ${(p0.tag as MarkerData).time} \nWeather: ${(p0.tag as MarkerData).conditions} (${(p0.tag as MarkerData).temperature}\u2109)", LENGTH_LONG)
         mySnackbar.show()

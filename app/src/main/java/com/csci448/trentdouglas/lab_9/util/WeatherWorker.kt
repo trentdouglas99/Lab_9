@@ -6,8 +6,10 @@ import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.csci448.trentdouglas.lab_9.data.MarkerData
 import com.csci448.trentdouglas.lab_9.data.jsonStuff.ApiData
 import com.csci448.trentdouglas.lab_9.fragments.LocatrFragment
+import com.google.android.gms.maps.model.Marker
 import com.google.gson.Gson
 import java.net.URL
 
@@ -17,8 +19,10 @@ class WeatherWorker(context: Context, workerParameters: WorkerParameters): Worke
         private const val WEATHER_API_KEY = "5d089dadf2c84967e8d55dbbb5716e06"
         private var lat:Double = LocatrFragment.INSTANCE.getLat()
         private var long:Double = LocatrFragment.INSTANCE.getLong()
+        private var time:String = LocatrFragment.INSTANCE.getTime()
         private var WEATHER_DATA_API = "https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=${WEATHER_API_KEY}"
         private const val LOG_TAG = "448.WeatherWorker"
+        private lateinit var markerData:MarkerData
         fun getApiData(outputData: Data) = outputData.getString(WEATHER_API_KEY)
     }
 
@@ -34,7 +38,18 @@ class WeatherWorker(context: Context, workerParameters: WorkerParameters): Worke
 
         val apiData = Gson().fromJson(urlStringResult, ApiData::class.java)
         Log.d(LOG_TAG, "${apiData.main.temp}")
-        LocatrFragment.INSTANCE.setWeather(apiData.main.temp, apiData.weather.description)
+       // LocatrFragment.INSTANCE.setWeather(apiData.main.temp, apiData.weather.description)
+
+        var viewModel = LocatrFragment.INSTANCE.getViewModel()
+
+
+        markerData = MarkerData()
+        markerData.conditions = apiData.weather.description
+        markerData.temperature = ((apiData.main.temp - 273.15) * 9/5 + 32).toInt()
+        markerData.lattitude = lat
+        markerData.longitude = long
+        markerData.time = time
+        viewModel.addMarker(markerData)
 
 
         val outputData = workDataOf(WEATHER_API_KEY to urlStringResult)

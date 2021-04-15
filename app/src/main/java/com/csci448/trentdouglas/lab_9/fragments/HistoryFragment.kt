@@ -35,11 +35,11 @@ class HistoryFragment : Fragment() {
     override fun onAttach(context: Context){
         Log.d(LOG_TAG, "onAttach() called")
         super.onAttach(context)
-        try {
-            _callbacks = (context as Callbacks)
-        } catch (e: ClassCastException) {
-            throw ClassCastException("$context must implement HistoryListFragment.Callbacks")
-        }
+//        try {
+//            _callbacks = (context as Callbacks)
+//        } catch (e: ClassCastException) {
+//            throw ClassCastException("$context must implement HistoryListFragment.Callbacks")
+//        }
 
     }
     override fun onCreate(savedInstanceState: Bundle?){
@@ -107,7 +107,7 @@ class HistoryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?){
         Log.d(LOG_TAG, "onViewCreated() called")
         super.onViewCreated(view, savedInstanceState)
-        markerListViewModel.crimeListLiveData.observe(
+        markerListViewModel.markerListLiveData.observe(
             viewLifecycleOwner,
             Observer { markers ->
                 markers?.let{

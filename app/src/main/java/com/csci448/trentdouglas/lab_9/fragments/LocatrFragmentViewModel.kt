@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.csci448.trentdouglas.lab_9.data.MarkerData
 import com.csci448.trentdouglas.lab_9.data.repo.MarkerDataRepository
 
-class MarkerListViewModel (private val markerDataRepository: MarkerDataRepository) : ViewModel() {
+class LocatrFragmentViewModel (private val markerDataRepository: MarkerDataRepository) : ViewModel() {
     val markerListLiveData = markerDataRepository.getMarkers()
 
     fun addMarker(markerData: MarkerData) {

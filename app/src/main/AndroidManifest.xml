@@ -33,7 +33,8 @@
             android:value="@string/google_maps_key" />
 
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:theme="@style/Theme.Lab_9.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
