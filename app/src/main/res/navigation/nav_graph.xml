@@ -8,4 +8,9 @@
         android:id="@+id/locatrFragment"
         android:name="com.csci448.trentdouglas.lab_9.fragments.LocatrFragment"
         android:label="LocatrFragment" />
+    <fragment
+        android:id="@+id/historyFragment"
+        android:name="com.csci448.trentdouglas.lab_9.fragments.HistoryFragment"
+        android:label="HistoryFragment" />
+
 </navigation>
