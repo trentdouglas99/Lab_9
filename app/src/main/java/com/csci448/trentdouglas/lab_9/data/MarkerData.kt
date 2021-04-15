@@ -1,9 +1,14 @@
 package com.csci448.trentdouglas.lab_9.data
 
-data class MarkerData (
-    var time: String,
-    var lattitude: Double,
-    var longitude: Double,
-    var temperature: Int,
-    var conditions: String,)
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import java.util.*
+
+@Entity
+data class MarkerData (@PrimaryKey val id: UUID = UUID.randomUUID(),
+                       var time: String = "",
+                       var lattitude: Double = 0.0,
+                       var longitude: Double = 0.0,
+                       var temperature: Int = 0,
+                       var conditions: String = "",)
 

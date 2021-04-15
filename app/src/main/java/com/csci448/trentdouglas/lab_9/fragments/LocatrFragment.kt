@@ -51,7 +51,7 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
     }
     private lateinit var mapView : View
 
-    private var markerData:MarkerData = MarkerData("0", 0.0, 0.0, 0, "not here")
+    private var markerData:MarkerData = MarkerData()
     public fun getLong():Double{
         return markerData.longitude
     }
