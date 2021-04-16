@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="save_to_database"
+        android:title="Save Data To Database" />
+
+    <Preference
+        android:enabled="true"
+        android:defaultValue="false"
+        android:key="clear_data"
+        android:title="Clear Data" />
+
+
+</PreferenceScreen>

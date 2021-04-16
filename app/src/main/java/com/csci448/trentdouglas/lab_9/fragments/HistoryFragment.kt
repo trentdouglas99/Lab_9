@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.csci448.trentdouglas.lab_9.R
 import com.csci448.trentdouglas.lab_9.data.MarkerData
 import com.csci448.trentdouglas.lab_9.databinding.FragmentListBinding
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.*
 
 class HistoryFragment : Fragment() {
@@ -96,12 +97,18 @@ class HistoryFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?{
+
+        val fab: FloatingActionButton = requireActivity().findViewById(R.id.fab)
+        fab.visibility = View.GONE
+
         Log.d(LOG_TAG, "onCreateView() called")
         _binding = FragmentListBinding.inflate(inflater, container, false)
 
         binding.markerListRecyclerView.layoutManager = LinearLayoutManager(context)
 
         updateUI(emptyList())
+
+
 
         return binding.root
 

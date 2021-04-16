@@ -12,5 +12,13 @@
         android:id="@+id/historyFragment"
         android:name="com.csci448.trentdouglas.lab_9.fragments.HistoryFragment"
         android:label="HistoryFragment" />
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.csci448.trentdouglas.lab_9.fragments.SettingsFragment"
+        android:label="SettingsFragment" />
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="com.csci448.trentdouglas.lab_9.fragments.AboutFragment"
+        android:label="AboutFragment" />
 
 </navigation>

@@ -4,6 +4,7 @@ import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.Activity
 import android.content.Intent
 import android.content.IntentSender
+import android.content.SharedPreferences
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.location.Geocoder
 import android.location.Location
@@ -19,6 +20,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.preference.PreferenceManager
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -36,6 +38,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
 import com.google.android.material.snackbar.Snackbar
 import java.io.IOException
@@ -51,6 +54,10 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
         public const val REQUEST_LOC_ON = 0
         private var locationUpdateState = false
         public lateinit var INSTANCE:LocatrFragment
+        public lateinit var sharedPref:SharedPreferences
+    }
+    public fun getPrefs(): SharedPreferences? {
+        return sharedPref
     }
     private lateinit var mapView : View
     private var markerList = mutableListOf<MarkerData>()
@@ -169,14 +176,16 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
 
     override fun onResume() {
         super.onResume()
+        val fab: FloatingActionButton = requireActivity().findViewById(R.id.fab)
+        fab.visibility = View.VISIBLE
         locatrFragmentViewModel.markerListLiveData.observe(
                 viewLifecycleOwner,
                 Observer { markers -> markers?.let{
                     Log.i(LOG_TAG, "Got markers ${markers.size}")
                     markerList = mutableListOf()
-                    Log.d(LOG_TAG, "${markers[0].conditions}")
+                    //Log.d(LOG_TAG, "${markers[0].conditions}")
                     markerList.addAll(markers)
-                    Log.d(LOG_TAG, "${markerList[0].conditions}")
+                    //Log.d(LOG_TAG, "${markerList[0].conditions}")
                     updateUI()
                     }
                 }
@@ -335,6 +344,10 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.d(LOG_TAG, "onCreateView() called")
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
+
+
+
         mapView = super.onCreateView(inflater, container, savedInstanceState)!!
 
 
@@ -375,7 +388,7 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
     }
 
     override fun onMarkerClick(p0: Marker?): Boolean {
-        //p0!!.showInfoWindow()
+        p0!!.showInfoWindow()
 
         var view: View? = getActivity()?.findViewById(R.id.drawer_layout)
         view = view!!

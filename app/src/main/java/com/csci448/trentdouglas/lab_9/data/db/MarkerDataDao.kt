@@ -21,4 +21,7 @@ interface MarkerDataDao {
 
     @Insert
     fun addMarker(markerData: MarkerData)
+
+    @Query("DELETE FROM markerData")
+    fun clearData()
 }

@@ -37,6 +37,11 @@ class MarkerDataRepository private constructor (private val markerDataDao: Marke
 //            markerData.updateMarker(markerData)
 //        }
 //    }
+    fun clearData(){
+        executor.execute{
+            markerDataDao.clearData()
+        }
+    }
 
 
 }

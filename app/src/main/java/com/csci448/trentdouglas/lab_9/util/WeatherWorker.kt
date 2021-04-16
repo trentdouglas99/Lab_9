@@ -2,6 +2,8 @@ package com.csci448.trentdouglas.lab_9.util
 
 import android.content.Context
 import android.util.Log
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.preference.PreferenceManager
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -12,6 +14,7 @@ import com.csci448.trentdouglas.lab_9.fragments.LocatrFragment
 import com.google.android.gms.maps.model.Marker
 import com.google.gson.Gson
 import java.net.URL
+import java.security.AccessController.getContext
 
 
 class WeatherWorker(context: Context, workerParameters: WorkerParameters): Worker(context, workerParameters) {
@@ -49,7 +52,12 @@ class WeatherWorker(context: Context, workerParameters: WorkerParameters): Worke
         markerData.lattitude = lat
         markerData.longitude = long
         markerData.time = time
-        viewModel.addMarker(markerData)
+        var sharedPref = LocatrFragment.INSTANCE.getPrefs()
+        if (sharedPref!!.getBoolean("save_to_database", true) == true){
+            viewModel.addMarker(markerData)
+        }
+
+
 
 
 
