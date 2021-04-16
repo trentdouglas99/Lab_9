@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -30,7 +31,27 @@ class SettingsFragment: PreferenceFragmentCompat() {
 
         preferenceManager.findPreference<Preference>("clear_data")!!.onPreferenceClickListener =
                 Preference.OnPreferenceClickListener {
-                    markerDataRepository.clearData()
+
+
+
+                    AlertDialog.Builder(requireContext()).apply {
+                        setTitle(R.string.confirm_delete)
+                        setMessage("Are you sure you want to delete the database?")
+                        setIcon(R.drawable.ic_menu_delete_character_light)
+                        setPositiveButton(android.R.string.ok) { _, _ ->
+                            markerDataRepository.clearData()
+                        }
+                        setNegativeButton(android.R.string.cancel) { _, _ ->
+                        }
+                        show()
+                    }
+
+
+
+
+
+
+
                     Log.d(LOG_TAG, ".........................cleared...............................")
 
                     true
