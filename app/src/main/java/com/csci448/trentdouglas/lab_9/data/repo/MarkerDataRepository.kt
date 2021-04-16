@@ -2,6 +2,8 @@ package com.csci448.trentdouglas.lab_9.data.repo
 
 import android.content.Context
 import androidx.lifecycle.LiveData
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
 import com.csci448.trentdouglas.lab_9.data.MarkerData
 import com.csci448.trentdouglas.lab_9.data.db.MarkerDataDao
 import com.csci448.trentdouglas.lab_9.data.db.MarkerDataDatabase
@@ -27,6 +29,13 @@ class MarkerDataRepository private constructor (private val markerDataDao: Marke
         }
 
     }
+
+    fun getMarkersPaged(): LiveData<PagedList<MarkerData>> =
+            LivePagedListBuilder(
+                    markerDataDao.getMarkersPaged(),
+                    PagedList.Config.Builder().setPageSize(100).build()
+            ).build()
+
     fun addMarker(markerData: MarkerData){
         executor.execute{
             markerDataDao.addMarker(markerData)
@@ -40,6 +49,11 @@ class MarkerDataRepository private constructor (private val markerDataDao: Marke
     fun clearData(){
         executor.execute{
             markerDataDao.clearData()
+        }
+    }
+    fun deleteMarker(marker: MarkerData) {
+        executor.execute {
+            markerDataDao.deleteMarker(marker)
         }
     }
 

@@ -9,6 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.paging.PagedList
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.csci448.trentdouglas.lab_9.R
 import com.csci448.trentdouglas.lab_9.data.MarkerData
@@ -53,26 +55,7 @@ class HistoryFragment : Fragment() {
 
     }
 
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        Log.d(LOG_TAG, "onOptionsItemSelected() called")
-//        return when(item.itemId) {
-//            R.id.new_crime_menu_item -> {
-//                val crime = Crime()
-//                markerListViewModel.addCrime(crime)
-//                val action = CrimeListFragmentDirections.actionCrimeListFragmentToCrimeDetailFragment(crime.id)
-//                findNavController().navigate(action)
-//                true
-//            }
-//            else -> super.onOptionsItemSelected(item)
-//        }
-//    }
-//
-//
-//    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-//        super.onCreateOptionsMenu(menu, inflater)
-//        Log.d(LOG_TAG, "onCreateOptionsMenu() called")
-//        inflater.inflate(R.menu.fragment_crime_list, menu)
-//    }
+
 
     private var _binding: FragmentListBinding? = null
     // This property is only valid between onCreateView and onDestroyView
@@ -81,20 +64,7 @@ class HistoryFragment : Fragment() {
 
     private lateinit var adapter: MarkerListAdapter
 
-    private fun updateUI(markers: List<MarkerData>) {
-        adapter = MarkerListAdapter(markers) { marker: MarkerData ->
-//            if(callbacks.getOrientation() == Configuration.ORIENTATION_PORTRAIT) {
-//                // we are in one pane mode with a NavController
-//                val action = CrimeListFragmentDirections.actionCrimeListFragmentToCrimeDetailFragment(crime.id)
-//                findNavController().navigate(action)
-//            } else {
-//                // we are in two pane mode, we don’t know what else
-//                // exists..Host, handle for us!
-//                callbacks.onCrimeSelected(crime.id)
-//            }
-        }
-        binding.markerListRecyclerView.adapter = adapter
-    }
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?{
 
@@ -106,26 +76,35 @@ class HistoryFragment : Fragment() {
 
         binding.markerListRecyclerView.layoutManager = LinearLayoutManager(context)
 
-        updateUI(emptyList())
-
 
 
         return binding.root
 
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?){
-        Log.d(LOG_TAG, "onViewCreated() called")
         super.onViewCreated(view, savedInstanceState)
-        markerListViewModel.markerListLiveData.observe(
-            viewLifecycleOwner,
-            Observer { markers ->
-                markers?.let{
-                    Log.i(LOG_TAG, "Got markers ${markers.size}")
-                    updateUI(markers)
+        Log.d(LOG_TAG, "onViewCreated() called")
+
+        adapter = MarkerListAdapter(markerListViewModel) { marker: MarkerData ->
+        }
+        binding.markerListRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.markerListRecyclerView.adapter = adapter
+
+        val itemTouchHelperCallback = SwipeToDeleteHelper(adapter)
+        val touchHelper = ItemTouchHelper(itemTouchHelperCallback)
+        touchHelper.attachToRecyclerView(binding.markerListRecyclerView)
+
+        markerListViewModel.markerListLiveDataPaged.observe(
+                viewLifecycleOwner,
+                { markers ->
+                    markers?.let {
+                        Log.d(LOG_TAG, "Got ${markers.size} markers")
+                        updateUI(markers)
+                    }
                 }
-            }
         )
     }
+
     override fun onActivityCreated(savedInstanceState: Bundle?){
         Log.d(LOG_TAG, "onActivityCreated() called")
         super.onActivityCreated(savedInstanceState)
@@ -161,6 +140,8 @@ class HistoryFragment : Fragment() {
         super.onDetach()
         _callbacks = null
     }
-
+    private fun updateUI(markers: PagedList<MarkerData>) {
+        adapter.submitList(markers)
+    }
 
 }

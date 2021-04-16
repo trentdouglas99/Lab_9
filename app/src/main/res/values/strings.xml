@@ -8,4 +8,8 @@
     <string name="notification_channel_id">geoLocatrNotifyId</string>
     <string name="notification_title">Got a New Location</string>
     <string name="internet_reason">We need the internet to get the weather</string>
+    <string name="new_character_label">New Character</string>
+    <string name="delete_character_label">Delete check in</string>
+    <string name="confirm_delete">Confirm Delete?</string>
+    <string name="confirm_delete_message">Are you sure you wish to delete this check in?\n\n%1$s</string>
 </resources>
