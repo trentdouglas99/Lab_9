@@ -30,6 +30,7 @@ class HistoryFragment : Fragment() {
 
     companion object {
         private const val LOG_TAG = "448.HistoryListFrag"
+        public lateinit var markerListViewModel: MarkerListViewModel
     }
 
     override fun onAttach(context: Context){
@@ -48,6 +49,7 @@ class HistoryFragment : Fragment() {
         setHasOptionsMenu(true)
         val factory = MarkerListViewModelFactory(requireContext())
         markerListViewModel = ViewModelProvider(this@HistoryFragment, factory).get(MarkerListViewModel::class.java)
+
     }
 
 //    override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -74,7 +76,7 @@ class HistoryFragment : Fragment() {
     private var _binding: FragmentListBinding? = null
     // This property is only valid between onCreateView and onDestroyView
     private val binding get() = _binding!!
-    private lateinit var markerListViewModel: MarkerListViewModel
+
 
     private lateinit var adapter: MarkerListAdapter
 

@@ -10,6 +10,7 @@ import android.location.Location
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
+import androidx.lifecycle.Observer
 import android.view.*
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
@@ -23,6 +24,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.csci448.trentdouglas.lab_9.R
 import com.csci448.trentdouglas.lab_9.data.MarkerData
+import com.csci448.trentdouglas.lab_9.fragments.HistoryFragment.Companion.markerListViewModel
 import com.csci448.trentdouglas.lab_9.util.NetworkConnectionUtil.isNetworkAvailableAndConnected
 import com.csci448.trentdouglas.lab_9.util.WeatherWorker
 import com.google.android.gms.common.api.ResolvableApiException
@@ -51,7 +53,7 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
         public lateinit var INSTANCE:LocatrFragment
     }
     private lateinit var mapView : View
-
+    private var markerList = mutableListOf<MarkerData>()
     private var markerData:MarkerData = MarkerData()
     public fun getLong():Double{
         return markerData.longitude
@@ -63,11 +65,11 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
         return markerData.lattitude
     }
 
-//    public fun setWeather(temp:Double, conditions:String){
-//        markerData.temperature = ((temp - 273.15) * 9/5 + 32).toInt()
-//
-//        markerData.conditions = conditions
-//    }
+    public fun setWeather(temp:Double, conditions:String){
+        markerData.temperature = ((temp - 273.15) * 9/5 + 32).toInt()
+
+        markerData.conditions = conditions
+    }
 
     private lateinit var mySnackbar: Snackbar
     private lateinit var locationRequest: LocationRequest
@@ -81,6 +83,8 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
     private lateinit var locatrFragmentViewModel: LocatrFragmentViewModel
 
     private val LOG_TAG = "locatrFragment: "
+
+
 
     fun getWeatherData(){
         val workRequest = OneTimeWorkRequest.Builder(WeatherWorker::class.java).build()
@@ -107,40 +111,77 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
     }
 
     private fun updateUI() {
+        Log.d(LOG_TAG, "updating UI")
         // make sure we have a map and a location
-        if( !::googleMap.isInitialized || !::lastLocation.isInitialized ) {
-            return }
+        if( !::googleMap.isInitialized) return
+        Log.d(LOG_TAG, "here")
         // create a point for the corresponding lat/long
-        val myLocationPoint = LatLng(lastLocation.latitude, lastLocation.longitude)
- 
-        val myMarker = MarkerOptions()
-                .position(myLocationPoint)
-                .title("Longitude: ${lastLocation.longitude}, Lattidtude: ${lastLocation.latitude}")
 
 
-        lateinit var marker: Marker
-        marker = googleMap.addMarker(
-                myMarker
-        )
-        marker.tag = markerData
-        marker.showInfoWindow()
+        Log.d(LOG_TAG, "here2")
+
+
+        var myLocationPoint:LatLng
+        if(::lastLocation.isInitialized ){
+            myLocationPoint = LatLng(lastLocation.latitude, lastLocation.longitude)
+            var myMarker = MarkerOptions().position(myLocationPoint).title("Longitude: ${lastLocation.longitude}, Latidtude: ${lastLocation.latitude}")
+            var marker: Marker
+            marker = googleMap.addMarker(myMarker)
+            marker.tag = markerData
+            //marker.showInfoWindow()
+        }
+
+        Log.d(LOG_TAG, "here3")
+
+
+        Log.d(LOG_TAG, "Size: ${markerList.size}")
+        var marker2: Marker
+        for (item in markerList) {
+
+            var myMarker2 = MarkerOptions().position(LatLng(item.lattitude, item.longitude)).title("Longitude: ${item.longitude}, Latitude: ${item.lattitude}")
+
+            marker2 = googleMap.addMarker(
+                    myMarker2
+            )
+            marker2.tag = item
+            //marker2.showInfoWindow()
+        }
 
 
         //googleMap.clear()
 
         // include all points that should be within the bounds of the zoom
         // convex hull
-        val bounds = LatLngBounds.Builder().include(myLocationPoint).build()
-        // add a margin
-        val margin = resources.getDimensionPixelSize(R.dimen.map_inset_margin)
-        // create a camera to smoothly move the map view
-        val cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, margin)
-        // move our camera!
-        googleMap.animateCamera(cameraUpdate)
+        if(::lastLocation.isInitialized ){
+            myLocationPoint = LatLng(lastLocation.latitude, lastLocation.longitude)
+            val bounds = LatLngBounds.Builder().include(myLocationPoint).build()
+            // add a margin
+            val margin = resources.getDimensionPixelSize(R.dimen.map_inset_margin)
+            // create a camera to smoothly move the map view
+            val cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, margin)
+            // move our camera!
+            googleMap.animateCamera(cameraUpdate)
+        }
+
     }
+
+
 
     override fun onResume() {
         super.onResume()
+        locatrFragmentViewModel.markerListLiveData.observe(
+                viewLifecycleOwner,
+                Observer { markers -> markers?.let{
+                    Log.i(LOG_TAG, "Got markers ${markers.size}")
+                    markerList = mutableListOf()
+                    Log.d(LOG_TAG, "${markers[0].conditions}")
+                    markerList.addAll(markers)
+                    Log.d(LOG_TAG, "${markerList[0].conditions}")
+                    updateUI()
+                    }
+                }
+        )
+        Log.d(LOG_TAG, "OnResume called")
         if(!isNetworkAvailableAndConnected(requireActivity())){
             Toast.makeText(requireContext(), R.string.internet_reason, Toast.LENGTH_SHORT).show()
 
@@ -153,7 +194,7 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        val factory = MarkerListViewModelFactory(requireContext())
+        val factory = LocatrFragmentViewModelFactory(requireContext())
         locatrFragmentViewModel = ViewModelProvider(this@LocatrFragment, factory).get(LocatrFragmentViewModel::class.java)
 
         workManager = WorkManager.getInstance(requireContext())
@@ -178,12 +219,6 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
                 getWeatherData()
 
 
-
-
-
-
-                //               binding.locationTextView.text = "(${locationResult.lastLocation.latitude},${locationResult.lastLocation.longitude})"
- //               binding.addressTextView.text = getAddress(locationResult.lastLocation)
                 updateUI()
             }
         }
@@ -302,28 +337,30 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
         Log.d(LOG_TAG, "onCreateView() called")
         mapView = super.onCreateView(inflater, container, savedInstanceState)!!
 
+
+
         return mapView
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        Log.d(LOG_TAG, "onCreateOptionsMenu() called")
-        inflater.inflate(R.menu.fragment_locatr, menu)
-        val locationItem = menu.findItem(R.id.get_location_menu_item)
-        //locationItem.isEnabled = locationUpdateState
-        locationItem.isEnabled = (locationUpdateState && ::googleMap.isInitialized)
-
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.get_location_menu_item) {
-            Log.d(LOG_TAG, "checking permissions")
-            checkPermissionAndGetLocation()
-            return true
-        }
-        Log.d(LOG_TAG, "called location button!")
-        return super.onOptionsItemSelected(item)
-    }
+//    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+//        super.onCreateOptionsMenu(menu, inflater)
+//        Log.d(LOG_TAG, "onCreateOptionsMenu() called")
+//        inflater.inflate(R.menu.fragment_locatr, menu)
+//        val locationItem = menu.findItem(R.id.get_location_menu_item)
+//        //locationItem.isEnabled = locationUpdateState
+//        locationItem.isEnabled = (locationUpdateState && ::googleMap.isInitialized)
+//
+//    }
+//
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        if (item.itemId == R.id.get_location_menu_item) {
+//            Log.d(LOG_TAG, "checking permissions")
+//            checkPermissionAndGetLocation()
+//            return true
+//        }
+//        Log.d(LOG_TAG, "called location button!")
+//        return super.onOptionsItemSelected(item)
+//    }
 
     override fun onStart() {
         super.onStart()
@@ -338,11 +375,11 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
     }
 
     override fun onMarkerClick(p0: Marker?): Boolean {
-        p0!!.showInfoWindow()
+        //p0!!.showInfoWindow()
 
         var view: View? = getActivity()?.findViewById(R.id.drawer_layout)
         view = view!!
-        mySnackbar = Snackbar.make(view, "Time: ${(p0.tag as MarkerData).time} \nWeather: ${(p0.tag as MarkerData).conditions} (${(p0.tag as MarkerData).temperature}\u2109)", LENGTH_LONG)
+        mySnackbar = Snackbar.make(requireView(), "Time: ${(p0!!.tag as MarkerData).time} \nWeather: ${(p0.tag as MarkerData).conditions} (${(p0.tag as MarkerData).temperature}\u2109)", LENGTH_LONG)
         mySnackbar.show()
         return true
     }

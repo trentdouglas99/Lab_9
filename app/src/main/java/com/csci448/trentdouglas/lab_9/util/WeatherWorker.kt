@@ -38,7 +38,7 @@ class WeatherWorker(context: Context, workerParameters: WorkerParameters): Worke
 
         val apiData = Gson().fromJson(urlStringResult, ApiData::class.java)
         Log.d(LOG_TAG, "${apiData.main.temp}")
-       // LocatrFragment.INSTANCE.setWeather(apiData.main.temp, apiData.weather.description)
+        LocatrFragment.INSTANCE.setWeather(apiData.main.temp, apiData.weather.description)
 
         var viewModel = LocatrFragment.INSTANCE.getViewModel()
 
@@ -50,6 +50,7 @@ class WeatherWorker(context: Context, workerParameters: WorkerParameters): Worke
         markerData.longitude = long
         markerData.time = time
         viewModel.addMarker(markerData)
+
 
 
         val outputData = workDataOf(WEATHER_API_KEY to urlStringResult)
