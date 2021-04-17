@@ -1,6 +1,7 @@
 package com.csci448.trentdouglas.lab_9.data.repo
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
@@ -11,6 +12,7 @@ import java.util.*
 import java.util.concurrent.Executors
 
 class MarkerDataRepository private constructor (private val markerDataDao: MarkerDataDao) {
+    private val LOG_TAG = "repo"
     fun getMarkers(): LiveData<List<MarkerData>> = markerDataDao.getMarkers()
     fun getMarkers(id: UUID): LiveData<MarkerData?> = markerDataDao.getMarker(id)
     private val executor = Executors.newSingleThreadExecutor()
@@ -38,6 +40,7 @@ class MarkerDataRepository private constructor (private val markerDataDao: Marke
 
     fun addMarker(markerData: MarkerData){
         executor.execute{
+        Log.d(LOG_TAG, "added ${markerData.time}")
             markerDataDao.addMarker(markerData)
         }
     }

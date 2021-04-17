@@ -7,18 +7,18 @@
     <fragment
         android:id="@+id/locatrFragment"
         android:name="com.csci448.trentdouglas.lab_9.fragments.LocatrFragment"
-        android:label="LocatrFragment" />
+        android:label="Map" />
     <fragment
         android:id="@+id/historyFragment"
         android:name="com.csci448.trentdouglas.lab_9.fragments.HistoryFragment"
-        android:label="HistoryFragment" />
+        android:label="History" />
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.csci448.trentdouglas.lab_9.fragments.SettingsFragment"
-        android:label="SettingsFragment" />
+        android:label="Settings" />
     <fragment
         android:id="@+id/aboutFragment"
         android:name="com.csci448.trentdouglas.lab_9.fragments.AboutFragment"
-        android:label="AboutFragment" />
+        android:label="About" />
 
 </navigation>

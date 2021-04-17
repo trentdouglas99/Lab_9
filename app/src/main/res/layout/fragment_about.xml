@@ -10,5 +10,10 @@
         android:text="About"
         android:textSize="50sp"
         />
-
+    <TextView
+        android:padding="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="This app will get the user's location when they push the floating action button and will obtain the weather data for that location and put a pin on the map. When the user taps the pin, the weather data and location as well as the timestamp are displayed in the snackbar. These pins are stored in the database and can be viewed in the history fragment. The user can also choose not to store the data in the database in the settings. The database can be cleared and individual entries can be cleared with a swipe. Enjoy!"
+        />
 </LinearLayout>

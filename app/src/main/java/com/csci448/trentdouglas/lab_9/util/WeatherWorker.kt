@@ -15,6 +15,9 @@ import com.google.android.gms.maps.model.Marker
 import com.google.gson.Gson
 import java.net.URL
 import java.security.AccessController.getContext
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class WeatherWorker(context: Context, workerParameters: WorkerParameters): Worker(context, workerParameters) {
@@ -43,15 +46,21 @@ class WeatherWorker(context: Context, workerParameters: WorkerParameters): Worke
         Log.d(LOG_TAG, "${apiData.main.temp}")
         LocatrFragment.INSTANCE.setWeather(apiData.main.temp, apiData.weather.description)
 
+        Log.d(LOG_TAG, "here1")
         var viewModel = LocatrFragment.INSTANCE.getViewModel()
 
-
+        Log.d(LOG_TAG, "here2")
         markerData = MarkerData()
+        Log.d(LOG_TAG, "here3")
         markerData.conditions = apiData.weather.description
         markerData.temperature = ((apiData.main.temp - 273.15) * 9/5 + 32).toInt()
         markerData.lattitude = lat
         markerData.longitude = long
-        markerData.time = time
+        val dateFormat: DateFormat = SimpleDateFormat("MM/dd/yyyy  HH:mm:ss ")
+        var cal: Calendar = Calendar.getInstance()
+        markerData.time = dateFormat.format(cal.time)
+
+        Log.d(LOG_TAG, "data ${markerData.lattitude}, ${markerData.longitude}, ${markerData.temperature}, ${markerData.time}, ${markerData.conditions}")
         var sharedPref = LocatrFragment.INSTANCE.getPrefs()
         if (sharedPref!!.getBoolean("save_to_database", true) == true){
             viewModel.addMarker(markerData)

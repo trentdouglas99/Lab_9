@@ -222,9 +222,9 @@ class LocatrFragment: SupportMapFragment(), GoogleMap.OnMarkerClickListener {
                 Log.d(LOG_TAG, "Got a location: ${locationResult.lastLocation}")
                 markerData.lattitude = locationResult.lastLocation.latitude
                 markerData.longitude = locationResult.lastLocation.longitude
-                val dateFormat: DateFormat = SimpleDateFormat("HH:mm:ss MM/dd/yyyy")
-                val cal: Calendar = Calendar.getInstance()
-                markerData.time = dateFormat.format(cal.getTime())
+//                val dateFormat: DateFormat = SimpleDateFormat("HH:mm:ss MM/dd/yyyy")
+//                val cal: Calendar = Calendar.getInstance()
+//                markerData.time = dateFormat.format(cal.getTime())
                 getWeatherData()
 
 
